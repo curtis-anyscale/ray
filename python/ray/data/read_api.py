@@ -1132,6 +1132,7 @@ def read_parquet(
     shuffle: Optional[Union[Literal["files"], FileShuffleConfig]] = None,
     include_paths: bool = False,
     include_row_hash: bool = False,
+    ignore_missing_paths: bool = False,
     file_extensions: Optional[List[str]] = ParquetDatasource._FILE_EXTENSIONS,
     concurrency: Optional[int] = None,
     override_num_blocks: Optional[int] = None,
@@ -1249,6 +1250,8 @@ def read_parquet(
             same data with the same pipeline configuration. Stored in the
             ``'row_hash'`` column. If a column named ``'row_hash'`` already
             exists in the file, it will be overwritten.
+        ignore_missing_paths: If True, ignores any file/directory paths in ``paths``
+            that are not found. Defaults to False.
         file_extensions: A list of file extensions to filter files by.
         concurrency: The maximum number of Ray tasks to run concurrently. Set this
             to control number of tasks to run concurrently. This doesn't change the
@@ -1351,6 +1354,7 @@ def read_parquet(
         shuffle=shuffle,
         include_paths=include_paths,
         include_row_hash=include_row_hash,
+        ignore_missing_paths=ignore_missing_paths,
         file_extensions=file_extensions,
     )
     return read_datasource(

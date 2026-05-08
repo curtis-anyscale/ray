@@ -212,6 +212,7 @@ def _list_files(
     *,
     partition_filter: Optional[PathPartitionFilter],
     file_extensions: Optional[List[str]],
+    ignore_missing_paths: bool = False,
 ) -> List[Tuple[str, int]]:
     return list(
         _list_files_internal(
@@ -219,6 +220,7 @@ def _list_files(
             filesystem,
             partition_filter=partition_filter,
             file_extensions=file_extensions,
+            ignore_missing_paths=ignore_missing_paths,
         )
     )
 
@@ -229,10 +231,13 @@ def _list_files_internal(
     *,
     partition_filter: Optional[PathPartitionFilter],
     file_extensions: Optional[List[str]],
+    ignore_missing_paths: bool = False,
 ) -> Iterator[Tuple[str, int]]:
     default_meta_provider = DefaultFileMetadataProvider()
 
-    for path, file_size in default_meta_provider.expand_paths(paths, filesystem):
+    for path, file_size in default_meta_provider.expand_paths(
+        paths, filesystem, ignore_missing_paths=ignore_missing_paths
+    ):
         # HACK: PyArrow's `ParquetDataset` errors if input paths contain non-parquet
         # files. To avoid this, we expand the input paths with the default metadata
         # provider and then apply the partition filter or file extensions.

@@ -1209,6 +1209,36 @@ def test_parquet_read_empty_file(
     assert ds.take_all() == []
 
 
+def test_parquet_read_ignore_missing_paths_true(ray_start_regular_shared, tmp_path):
+    valid_path = os.path.join(tmp_path, "valid.parquet")
+    missing_path = os.path.join(tmp_path, "missing.parquet")
+    pd.DataFrame({"a": [1, 2, 3]}).to_parquet(valid_path)
+
+    ds = ray.data.read_parquet(
+        [valid_path, missing_path], ignore_missing_paths=True
+    )
+    assert ds.count() == 3
+
+
+def test_parquet_read_ignore_missing_paths_false(ray_start_regular_shared, tmp_path):
+    valid_path = os.path.join(tmp_path, "valid.parquet")
+    missing_path = os.path.join(tmp_path, "missing.parquet")
+    pd.DataFrame({"a": [1, 2, 3]}).to_parquet(valid_path)
+
+    with pytest.raises(FileNotFoundError):
+        ray.data.read_parquet([valid_path, missing_path])
+
+
+def test_parquet_read_ignore_missing_paths_all_missing(
+    ray_start_regular_shared, tmp_path
+):
+    missing1 = os.path.join(tmp_path, "missing1.parquet")
+    missing2 = os.path.join(tmp_path, "missing2.parquet")
+
+    with pytest.raises(ValueError, match="None of the provided paths exist"):
+        ray.data.read_parquet([missing1, missing2], ignore_missing_paths=True)
+
+
 def test_parquet_reader_batch_size(
     ray_start_regular_shared, tmp_path, target_max_block_size_infinite_or_default
 ):
